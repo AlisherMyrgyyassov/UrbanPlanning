@@ -1,35 +1,17 @@
+#Made by Alisher 2023 test test test I am learning to use GitHub
+
+
+#Make logs
+
 from usefulFunctions import *
 
-#Setting important constants
-velocity = 14 #kph to mps
+filelog = open("logs.txt", 'w')
+def logprint(text, end = "\n"):
+    filelog.write(text + end)
 
-#Simplifications, good functions
 
-def lat_to_km(lat1, lon1, lat2, lon2): #giving distance given the curvature of the Earth, earth_radius=6371009 change the value to km to get km.
-    distance = ox.distance.great_circle_vec(lat1, lon1, lat2, lon2)
-    return distance #in meters by default
-
-def get_position_of_node(graph, node):
-    """
-    Get latitude and longitude given node ID
-    :param graph: object: OGraph object from osm_request
-    :param node:      graphml node ID
-    :return position: array:    [latitude, longitude]
-    """
-    # note that the x and y coordinates of the graph.nodes are flipped
-    # this is possibly an issue with the omnx graph.load_graphml method
-    # a correction is to make the position tuple be (y, x) as below
-    position = np.array([graph.nodes[node]['x'], graph.nodes[node]['y']])
-    return position
-
-def getAllNodesIDs(graph):
-    nodesList = []
-    for i in G.nodes:
-        nodesList.append(i)
-    return nodesList
-
-def find_cars(init_node, end_node, cars):
-    print("Nothing so far")
+# Setting important constants
+velocity = 14  # kph to mps
 
 
 class Car:
@@ -48,7 +30,7 @@ class Car:
         ix, iy = self.current_position
 
         real_dist = lat_to_km(ix, iy, tx, ty)
-        # print("real distance = ", real_dist)
+        logprint("real distance = " + str(real_dist))  # Print to the logfile
         if real_dist >= (velocity * time):
             map_dist = math.sqrt((tx - ix) ** 2 + (ty - iy) ** 2)
             traveling_dist = map_dist / real_dist * velocity * time
@@ -117,22 +99,26 @@ lat_to_km(xx1, yy1, xx2, yy2)
 tsutsenya = Car (G, nodesList[0])
 print(tsutsenya.current_position)
 
-fig, ax = ox.plot_graph(G, show=False, close=False)
+"""fig, ax = ox.plot_graph(G, show=False, close=False)
 ax.set_facecolor('green')
 xx1, yy1 = tsutsenya.current_position
 ax.scatter(xx1, yy1, c='red')
 plt.xlabel ("Initial Position")
-plt.show()
+plt.show()"""
 
 
 for i in range (5):
     tsutsenya.move_towards_node(nodesList[1], 5)
-    print(tsutsenya.current_position)
+    logprint("current position" + str(tsutsenya.current_position))
 
-    fig, ax = ox.plot_graph(G, show=False, close=False)
+    """fig, ax = ox.plot_graph(G, show=False, close=False)
     ax.set_facecolor('green')
     xx1, yy1 = tsutsenya.current_position
-    ax.scatter(xx1, yy1, c='red')
+    ax.scatter(xx1, yy1, c='red'
     plt.xlabel("Position, iteration: " + str(i))
-    plt.show()
+    plt.show())"""
 
+
+
+# Exiting
+filelog.close()
