@@ -1,7 +1,10 @@
-#Made by Alisher 2023 test test test I am learning to use GitHub
+# Made by Alisher 2023 test test test I am learning to use GitHub
 
-
-#Make logs
+# Make function to test the movement
+# Make logs
+# Modify movement function
+# Add signs and traffic lights
+# Pedestrians (?)
 
 from usefulFunctions import *
 
