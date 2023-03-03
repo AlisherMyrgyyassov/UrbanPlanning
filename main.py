@@ -1,10 +1,10 @@
 # Made by Alisher 2023 test test test I am learning to use GitHub
 
 # Make function to test the movement
-# Make logs
 # Modify movement function
 # Add signs and traffic lights
 # Pedestrians (?)
+# Make an adjacency matrix
 
 from usefulFunctions import *
 
@@ -14,27 +14,32 @@ def logprint(text, end = "\n"):
 
 
 # Setting important constants
-velocity = 14  # kph to mps
+velocity = 50  # kph to mps, 14 by default
 
 
 class Car:
+    # Declaration:
+    # init_node - initial node in the Node format
     def __init__(self, graph, init_node, target_node=None, color=None):  # add color later
         self.current_position = get_position_of_node(graph, init_node)
         self.color = color
+        self.route = []
+        # self.iteration = 0 # Will be needed later to count the number of ticks passed (Maybe)
         if target_node != None:
             self.target_pos = get_position_of_node(graph, target_node)
             self.target_node = target_node
+            self.route = nx.shortest_path(G, init_node, target_node)
 
     def update_pos(self, new_pos):  # manual update of position
         self.current_position = new_pos
 
-    def move_towards_node(self, target_node, time=1):  # without considering other drivers' behavior so far
-        tx, ty = get_position_of_node(G, target_node)
+    def move_towards_node(self, destination_node, time=1):  # Moving towards a certain node
+        tx, ty = get_position_of_node(G, destination_node)
         ix, iy = self.current_position
 
         real_dist = lat_to_km(ix, iy, tx, ty)
-        logprint("real distance = " + str(real_dist))  # Print to the logfile
-        if real_dist >= (velocity * time):
+        # logprint("real distance = " + str(real_dist))  # Print to the logfile
+        if real_dist >= (velocity * time): # 1 iteration towards the node
             map_dist = math.sqrt((tx - ix) ** 2 + (ty - iy) ** 2)
             traveling_dist = map_dist / real_dist * velocity * time
 
@@ -47,6 +52,17 @@ class Car:
             self.current_position = np.array([new_x, new_y])
         else:
             self.current_position = tx, ty
+            print("I reached the route", self.route[0])
+            self.route.pop(0)
+        # self.iteration += 1
+
+    def iter_move (self):
+        if len(self.route) == 0: print("The car reached the destination")
+        else:
+            self.move_towards_node(self.route[0])
+
+
+
 
 #Uploading coordinates. To change, modify config file
 
@@ -74,10 +90,6 @@ projected_graph = ox.project_graph(G, to_crs="EPSG:3395")
 Gc = ox.consolidate_intersections(projected_graph, dead_ends=True)
 edges = ox.graph_to_gdfs(ox.get_undirected(Gc), nodes=False)
 
-nodesList = getAllNodesIDs(G)
-print(nodesList[0])
-print(get_position_of_node(G, nodesList[0]))
-route = nx.shortest_path(G, nodesList[0], nodesList[1])
 # fig, ax = ox.plot_graph_route(G, route, orig_dest_size = 100, show=False, close=False)
 
 # G_nx = nx.relabel.convert_node_labels_to_integers(G)
@@ -85,21 +97,19 @@ route = nx.shortest_path(G, nodesList[0], nodesList[1])
 # results = [nodes, edges]
 
 
-fig, ax = ox.plot_graph(G, show=False, close=False)
+"""fig, ax = ox.plot_graph(G, show=False, close=False)
 ax.set_facecolor('green')
 xx1, yy1 = get_position_of_node(G, nodesList[0])
 xx2, yy2 = get_position_of_node(G, nodesList[1])
 ax.scatter(xx1, yy1, c='red')
-ax.scatter(xx2, yy2, c='red')
+ax.scatter(xx2, yy2, c='red')"""
 
 # ax.scatter(traffic_nodes_temp[numtemp][0], traffic_nodes_temp[numtemp][1], c='red')
-plt.show()
+# plt.show()
 
-lat_to_km(xx1, yy1, xx2, yy2)
+nodesList = getAllNodesIDs(G)
 
-
-
-tsutsenya = Car (G, nodesList[0])
+tsutsenya = Car (G, nodesList[0], nodesList[12])
 print(tsutsenya.current_position)
 
 """fig, ax = ox.plot_graph(G, show=False, close=False)
@@ -111,15 +121,15 @@ plt.show()"""
 
 
 for i in range (5):
-    tsutsenya.move_towards_node(nodesList[1], 5)
+    tsutsenya.iter_move()
     logprint("current position" + str(tsutsenya.current_position))
 
-    """fig, ax = ox.plot_graph(G, show=False, close=False)
+    fig, ax = ox.plot_graph(G, show=False, close=False)
     ax.set_facecolor('green')
     xx1, yy1 = tsutsenya.current_position
-    ax.scatter(xx1, yy1, c='red'
+    ax.scatter(xx1, yy1, c='red')
     plt.xlabel("Position, iteration: " + str(i))
-    plt.show())"""
+    plt.show()
 
 
 
