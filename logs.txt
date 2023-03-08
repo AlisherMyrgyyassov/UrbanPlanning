@@ -1,5 +1,0 @@
-current position(114.1794367, 22.2688338)
-current position(114.1796789, 22.2687425)
-current position[114.18012782  22.26880537]
-current position(114.1803144, 22.2688315)
-current position[114.18076189  22.26872368]

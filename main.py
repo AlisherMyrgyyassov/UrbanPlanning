@@ -16,7 +16,6 @@ def logprint(text, end = "\n"):
 # Setting important constants
 velocity = 50  # kph to mps, 14 by default
 
-
 class Car:
     # Declaration:
     # init_node - initial node in the Node format
@@ -120,6 +119,18 @@ plt.xlabel ("Initial Position")
 plt.show()"""
 
 
+def animate(i):
+    tsutsenya.iter_move()  # update the data
+    ax.set_facecolor('green')
+    xx1, yy1 = tsutsenya.current_position
+    ax.scatter(xx1, yy1, c='red')
+
+
+fig, ax = ox.plot_graph(G, show=False, close=False)
+ani = animation.FuncAnimation(fig, animate, frames=25, interval=100)
+plt.show()
+animation.save('animation.gif')
+"""
 for i in range (5):
     tsutsenya.iter_move()
     logprint("current position" + str(tsutsenya.current_position))
@@ -130,8 +141,7 @@ for i in range (5):
     ax.scatter(xx1, yy1, c='red')
     plt.xlabel("Position, iteration: " + str(i))
     plt.show()
-
-
-
+"""
 # Exiting
 filelog.close()
+
