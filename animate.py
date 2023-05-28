@@ -1,4 +1,4 @@
-import matplotlib;
+import matplotlib
 
 matplotlib.use("TkAgg")
 import numpy as np
