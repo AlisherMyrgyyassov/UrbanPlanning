@@ -18,28 +18,43 @@ velocity = 50  # kph to mps, 14 by default
 
 
 class Car:
-    # Declaration:
-    # init_node - initial node in the Node format
-    def __init__(self, graph, init_node, target_node=None, color=None):  # add color later
+    """
+    Class of a car driver initially assigned with the current node and the target node
+    """
+
+    def __init__(self, graph, init_node, target_node, color=None):  # add color later
+        """
+        :param init_node: node ID of the initial node
+        :param target_node: node ID of the target node
+        """
         self.current_position = get_position_of_node(graph, init_node)
         self.color = color
-        self.route = []
-        # self.iteration = 0 # Will be needed later to count the number of ticks passed (Maybe)
-        if target_node != None:
-            self.target_pos = get_position_of_node(graph, target_node)
-            self.target_node = target_node
-            self.route = nx.shortest_path(G, init_node, target_node)
+
+        self.target_position = get_position_of_node(graph, target_node)
+        self.target_node = target_node
+
+        self.all_target_nodes = nx.shortest_path(graph, init_node, target_node)
+        self.all_target_nodes = self.all_target_nodes[1:]
+
+        self.current_node = init_node
+
+        self.is_on_node = False  # A boolean variable to check if the car is on intersection
+
+        self.waiting_count = 0  # Number of ticks to wait
+
+    def wait(self, tick_number):
+        self.waiting_count = tick_number
 
     def update_pos(self, new_pos):  # manual update of position
         self.current_position = new_pos
 
-    def move_towards_node(self, destination_node, time=1):  # Moving towards a certain node
-        tx, ty = get_position_of_node(G, destination_node)
+    def move_towards_node(self, local_target_node, time=1):  # without considering other drivers' behavior so far
+        tx, ty = get_position_of_node(G, local_target_node)
         ix, iy = self.current_position
 
         real_dist = lat_to_km(ix, iy, tx, ty)
-        # logprint("real distance = " + str(real_dist))  # Print to the logfile
-        if real_dist >= (velocity * time): # 1 iteration towards the node
+        # print("real distance = ", real_dist)
+        if real_dist >= (velocity * time):
             map_dist = math.sqrt((tx - ix) ** 2 + (ty - iy) ** 2)
             traveling_dist = map_dist / real_dist * velocity * time
 
@@ -50,18 +65,73 @@ class Car:
             new_y = iy + traveling_dist * math.sin(angle)
             # print("map_dist = ", map_dist, "\ntravelling dist", traveling_dist, ix, iy, new_x, new_y)
             self.current_position = np.array([new_x, new_y])
+            self.is_on_node = False  # Still moving, not on node
         else:
             self.current_position = tx, ty
-            print("I reached the route", self.route[0])
-            self.route.pop(0)
-        # self.iteration += 1
+            self.current_node = local_target_node
+            self.is_on_node = True  # Is on node
 
-    def iter_move (self):
-        if len(self.route) == 0: print("The car reached the destination")
+    def finished(self):
+        """
+        Returns boolean true if the destination is reached, false if not
+        """
+        if self.current_node == self.target_node:
+            return True
         else:
-            self.move_towards_node(self.route[0])
+            return False
+
+    def iter_to_target(self):
+        if not self.finished():
+            if self.waiting_count == 0:
+                self.move_towards_node(self.all_target_nodes[0])
+                if self.current_node == self.all_target_nodes[0]:
+                    # print (self.all_target_nodes[0], "is reached")
+                    self.all_target_nodes = self.all_target_nodes[1:]
+            else:
+                self.waiting_count -= 1
+
+    def get_status(self):
+        """
+        Returns a dictionary with the status information about an object
+        """
+        self.status = {"CurrentNode": self.current_node,
+                       "CurrentPosition": self.current_position,
+                       "TargetNode": self.target_node,
+                       "TargetPosition": self.target_position,
+                       "OnNode": self.is_on_node}
+        return self.status
 
 
+class TrafficLight:
+    """Class for traffic lights"""
+
+    def __init__(self, graph, node_id, time=5):
+        self.state = random.randint(0, 1)  # Initialize with random, green (0) or red (1)
+        self.ticks = 0
+        self.id = node_id
+        self.graph = graph
+        self.time = time
+
+    def get_position(self):
+        return get_position_of_node(self.graph, self.id)
+
+    def one_tick(self):
+        self.ticks += 1
+        if self.ticks % self.time == self.time - 1:
+            if self.state == 0:
+                self.state = 1
+            else:
+                self.state = 0
+
+    def get_color(self):
+        if self.state:
+            return "red"
+        else:
+            return "green"
+
+    def draw_on_map(self, ax):
+        xx, yy = self.get_position()
+        ax.scatter(xx, yy, c=self.get_color())
 
 
 #Uploading coordinates. To change, modify config file
